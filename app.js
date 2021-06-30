@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const userRoutes = require('./api/routes/user');
+const todoRoutes = require('./api/routes/todo');
 
 const uri = process.env.MONGODB_URI;
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -26,6 +27,7 @@ app.use((req,res,next) =>{
 });
 
 app.use('/api', userRoutes);
+app.use('/api', todoRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

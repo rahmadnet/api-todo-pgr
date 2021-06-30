@@ -14,7 +14,7 @@ exports.user_register = (req, res, next) => {
             if (user.length >= 1) {
                 return res.status(409).json([{
                     status: false,
-                    message: "Mail Exist"
+                    message: "Email Already Exists"
                 }]);
             } else {
                 bcrypt.hash(req.body.password, 10, (err, hash) => {
@@ -60,15 +60,19 @@ exports.user_login = (req, res, next) => {
         .exec()
         .then(user => {
             if (user.length < 1) {
-                return res.status(401).json({
-                    message: "Auth failed"
-                });
+                return res.status(401).json([{
+                    status: false,
+                    message: "Login failed",
+                    data: {}
+                }]);
             }
             bcrypt.compare(req.body.password, user[0].password, (err, result) => {
                 if (err) {
-                    return res.status(401).json({
-                        message: "Auth Failed"
-                    });
+                    return res.status(401).json([{
+                        status: false,
+                        message: "Login failed",
+                        data: {}
+                    }]);
                 }
                 if (result) {
                     const token = jwt.sign({
@@ -97,3 +101,60 @@ exports.user_login = (req, res, next) => {
             }]);
         });
 };
+
+// DATA PROFILE USER
+exports.user_profile = (req, res, next) => {
+    User.find().select('_id nama asal no_hp email')
+    .exec().then(docs => {
+        const response = {
+            count: docs.length,
+            user: docs.map(doc => {
+                return {
+                    status: true,
+                    message: "Success",
+                    data: {
+                        _id: doc._id,
+                        nama: doc.nama,
+                        asal: doc.asal,
+                        no_hp: doc.no_hp,
+                        email: doc.email
+                    }
+                }
+            })
+
+        };
+        res.status(200).json(response);
+    }).catch(err => {
+        res.status(500).json({
+            status: false,
+            message: "Failed",
+            data: []
+        });
+    });
+};
+// DATA LOGOUT
+// exports.user_logout = (req, res, next) => {
+//     User.find({
+//         _id: req.params.userId
+//     })
+//     .exec()
+//     .then( result => {
+//         if (result) {
+//             const token = jwt.sign({
+//                 userId: user[0]._id
+//             },process.env.JWT_KEY, {
+//                 expiresIn: "5s"
+//             });
+//             res.status(200).json([{
+//                 status: true,
+//                 message: "Logout success",
+//                 token: token
+//             }]);
+//         }
+//     }).catch( err => {
+//         res.status(500).json([{
+//             status: true,
+//             message: "Logout Failed"
+//         }]);
+//     });
+// };
